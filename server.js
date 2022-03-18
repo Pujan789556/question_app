@@ -8,6 +8,8 @@ dotenv.config();
 
 const app = express();
 
+app.set('port', (process.env.PORT || 5000));
+
 const uri = process.env.MONGOSTRING;
 mongoose.connect(uri, (err) => {
     if(err) {
@@ -21,6 +23,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/', routes);
 
-app.listen(8000, () => {
-    console.log('listening on 8000')
+app.listen(app.get('port'), () => {
+    console.log('App is running, server is listening on port ', app.get('port'));
 })
