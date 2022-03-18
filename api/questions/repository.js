@@ -3,18 +3,27 @@ const Topic = require("../../models/topics");
 
 const searchQuestion = (queryString) => new Promise(async (resolve, reject) => {
     try {
-        var allTopic = [queryString];
-        const _getChildrenTopics = async (topic) => {
-            const childrenTopic = await Topic.find({
-                'parent': {
-                    $eq: topic
+        var allTopic = [];
+
+        const _getChildrenTopics = (topic) => new Promise(async (res, rej) => {
+            {
+                try {
+                    allTopic = [...allTopic, topic];
+                    const childrenTopic = await Topic.find({
+                        'parent': {
+                            $eq: topic
+                        }
+                    })
+                    await Promise.all(childrenTopic.map(async (child) => {
+                        await _getChildrenTopics(child.topic);
+                    }));
+                    res(true); 
+                } catch (error) {
+                    rej(error); 
                 }
-            })
-            childrenTopic.map(child => {
-                allTopic = [...allTopic, child.topic];
-                _getChildrenTopics(child.topic);
-            })
-        }
+            }
+        })
+
         await _getChildrenTopics(queryString);
         const questions = await Question.find({
             'annotation': {
